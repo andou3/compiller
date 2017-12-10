@@ -24,4 +24,4 @@ Yylex.java: lab4.jflex
 	$(JFLEX) lab4.jflex
 
 Parser.java: calc.y
-	$(BYACCJ) calc.y
+	$(BYACCJ) forSyntax.y

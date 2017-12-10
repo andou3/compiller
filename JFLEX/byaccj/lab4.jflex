@@ -23,10 +23,11 @@ import java.util.Scanner;
 %standalone*/
 %column
 variables = [a-zA-Z]([0-9]|[a-zA-Z])*
-NUM = [0-9]([0-9]|[a-zA-Z])*
-operator = ([<>=+-]|:=|[*/])
+NUM = [0-9]([0-9]|[a-fA-F])*
+operator = ([<>=+-]|[*/])
 Whitespace = [ \t\n]
 delimeter = [();]
+bodyBrackets = [{}]
 NL  = \n | \r | \r\n
 
 %{
@@ -95,9 +96,9 @@ enum Lexer {
 		private void addInTable() {
 			if (!checkExists(this)) {
 				table.get(hash % 9).add(hash);
-			} else {
+			}/* else {
 				throw new IllegalStateException("Переменная "+ this.name +" уже существует!");
-			}
+			}*/
 		}
 		/**
 		* ELF hash algorithm
@@ -146,6 +147,7 @@ enum Lexer {
 
 for {
 	print(Lexer.KEYWORD, yytext(), yycolumn);
+	return Parser.FOR;
 }
 do {
 	print(Lexer.KEYWORD, yytext(), yycolumn);
@@ -153,21 +155,37 @@ do {
 {variables} {
 	print(Lexer.VARIABLE, yytext(), yycolumn);
 	new Variable(yytext(), true);
+	yyparser.yylval.sval = yytext();
+	return Parser.variables;
 }
-/* operators */
-"+" | 
-"-" | 
-"*" | 
-"/" | 
-"^" | 
-"(" | 
-")"    { return (int) yycharat(0); }
+{operator}    { 
+		yyparser.yyval = new ParserVal(yytext()) ;
+		return Parser.operator;
+		 }
+
+:= {
+		//print(Lexer.OPERATION, yytext(), yycolumn);
+		return Parser.assign;
+	}
+
+{bodyBrackets} {
+	print(Lexer.DELIMETER, yytext(), yycolumn);
+	return (int) yycharat(0);
+}
+
+== {
+	return Parser.assertion;
+}
+
+"++" {
+	return Parser.increment;
+}
 
 /* newline */
 {NL}   { return Parser.NL; }
 
 /* float */
-{NUM}  { yyparser.yylval = new ParserVal((double) Integer.parseInt(yytext(), 16));
+{NUM}  { yyparser.yyval = new ParserVal((double) Integer.parseInt(yytext(), 16));
          return Parser.NUM; }
 
 /*{NUM} {
@@ -179,6 +197,7 @@ do {
 }*/
 {delimeter} {
 	print(Lexer.DELIMETER, yytext(), yycolumn);
+	return (int) yycharat(0);
 }
 /*{operator} {
 	print(Lexer.OPERATION, yytext(), yycolumn);

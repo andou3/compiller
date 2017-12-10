@@ -4,41 +4,46 @@
 %}
       
 %token NL          /* newline  */
+%token FOR, delimeter, assign, assertion, increment, BODY
 %token <dval> NUM  /* a number */
-%token <sval> variables
+%token <sval> variables, operator
 
 %type <dval> exp
+%type <dval> numer
 %type <dval> assignExp
 
 %left '-' '+'
+%left variables
 %left '*' '/'
 %left NEG          /* negation--unary minus */
-%right '^' "=="        /* exponentiation        */
-      
+%right '^'       /* exponentiation        */
+%start program
+
 %%
-
-input:   /* empty string */
-       | input line
-       ;
-      
-line:   /* NL      { }
+/*
+line:    NL      { }
        | exp NL  { System.out.println(" = " + $1); }
-       | */ assignExp NL { System.out.println("var = " + $1); }
-       ;
-      
-exp:   NUM { $$ = $1; }
-	   |  exp '+' exp        { $$ = $1 + $3; }
-       | exp '-' exp        { $$ = $1 - $3; }
-       | exp '*' exp        { $$ = $1 * $3; }
-       | exp '/' exp        { $$ = $1 / $3; }
-       | '-' exp  %prec NEG { $$ = -$2; }
-       | exp '^' exp        { $$ = Math.pow($1, $3); }
-       | exp "==" exp 		{ $$ = $1 == $3 ? 1L : 0L; }
-       | '(' exp ')'        { $$ = $2; }
-       ;
+       |  assignExp NL { System.out.println("var = " + $1); }
+       ;*/
+//To use any letter like ')' or other you MUST return it from lexical analizer
+//This syntax analizer read file per lines
+//To debug this throw calculate context free grammars
 
-assignExp: /*variables '=' exp { $$ = $1; }
-	| */ variables '=' exp { $$ = $3; }
+program: parser program
+parser: NL 
+  | statement
+  | exp NL /*{System.out.println($1);}*/
+statement: FOR '(' exp ';' cond ';' exp ')' scope
+  {System.out.println("TEEEEST");}
+numer: NUM {System.out.println($1);}
+exp: variables assign numer 
+    | variables assign variables {System.out.println($1 + ":=" + $3);}
+cond: variables assertion numer {System.out.println($1 + "==" + $3);}
+scope: '{' block '}'
+    | '{' NL block '}' {System.out.println("BLOCK");}
+block: /*empty*/
+    | program block
+exp2: variables increment {System.out.println($1 + "++");}
 
 %%
 
