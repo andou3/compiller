@@ -5,15 +5,14 @@
       
 %token NL          /* newline  */
 %token FOR, delimeter, assign, assertion, increment, BODY
-%token <dval> NUM  /* a number */
+%token <dval> NUM
 %token <sval> variables, operator
 
 %type <dval> exp
-%type <dval> numer
-%type <dval> assignExp
+%type <dval> NUM
 
 %left '-' '+'
-%left variables
+//%left variables
 %left '*' '/'
 %left NEG          /* negation--unary minus */
 %right '^'       /* exponentiation        */
@@ -29,21 +28,42 @@ line:    NL      { }
 //This syntax analizer read file per lines
 //To debug this throw calculate context free grammars
 
-program: parser program
-parser: NL 
-  | statement
+program: parser program | parser
+parser:  NL 
+  | statement 
   | exp NL /*{System.out.println($1);}*/
-statement: FOR '(' exp ';' cond ';' exp ')' scope
-  {System.out.println("TEEEEST");}
-numer: NUM {System.out.println($1);}
-exp: variables assign numer 
+  
+  /**
+  * for statement allows following forms: 
+  *for (;;) { 
+  *}
+  *for (VARIABLE := 1A3BCD; ; VARIABLE := 155dd) {} 
+  *for (; ; VARIABLE := 155dd) {} 
+  *for (; i == 0;) {} 
+  *for (VARIABLE := 1A3BCD; VARIABLE == 0; VARIABLE := 155dd) { 
+      i := 1 
+  *}
+  */
+statement: FOR '(' forExp ';' cond ';' forExp ')' scope
+  //| FOR '(' exp ';' ';' ')' scope
+  //| FOR '(' ';' cond ';' ')' scope
+  //| FOR '(' ';' ';' exp ')' scope
+  //| FOR '(' ';' ';' ')' scope
+  {System.out.println("FOR statement");}
+//numer: NUM {System.out.println($1);}
+forExp: /**/
+    | exp
+exp: variables assign NUM 
     | variables assign variables {System.out.println($1 + ":=" + $3);}
-cond: variables assertion numer {System.out.println($1 + "==" + $3);}
+cond:  /*empty*/
+    | variables assertion NUM {System.out.println($1 + "==" + $3);}
 scope: '{' block '}'
-    | '{' NL block '}' {System.out.println("BLOCK");}
-block: /*empty*/
-    | program block
-exp2: variables increment {System.out.println($1 + "++");}
+    | '{' NL block '}' 
+    | '{' '}'
+     {System.out.println("BLOCK");}
+block: parser block
+    | parser
+//exp2: variables increment {System.out.println($1 + "++");}
 
 %%
 
