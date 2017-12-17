@@ -1,5 +1,15 @@
-
-for (VARIABLE := 1A3BCD; VARIABLE == 0; VARIABLE := VARIABLE) { 
+i := VARIABLE
+i := 1
+i := 1
+i := 1
+for (;;) { 
+}
+i := 0
+for (VARIABLE := 1A3BCD; ; VARIABLE := 155dd) {} 
+for(;;) {
+	i := (23 + 2) + (1*234dd) 
+}
+for (VARIABLE := 1A3BCD; VARIABLE =+= 0; VARIABLE := 155dd) { 
 	i := 1 
 	i := 1 
 	i := 1 
@@ -10,4 +20,4 @@ for (VARIABLE := 1A3BCD; VARIABLE == 0; VARIABLE := VARIABLE) {
 	i := 1 
 	i := 1 
 	i := 1 
-}	
+}

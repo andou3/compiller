@@ -159,9 +159,9 @@ do {
 	return Parser.variables;
 }
 {operator}    { 
-		yyparser.yyval = new ParserVal(yytext()) ;
-		return Parser.operator;
-		 }
+		//yyparser.yyval.sval = new ParserVal(yytext()) ;
+		return (int) yycharat(0);
+}
 
 := {
 		//print(Lexer.OPERATION, yytext(), yycolumn);
@@ -184,8 +184,9 @@ do {
 /* newline */
 {NL}   { return Parser.NL; }
 
-/* float */
+/* double */
 {NUM}  { yyparser.yyval = new ParserVal((double) Integer.parseInt(yytext(), 16));
+		System.out.println("NUM: " + yyparser.yyval.dval);
          return Parser.NUM; }
 
 /*{NUM} {

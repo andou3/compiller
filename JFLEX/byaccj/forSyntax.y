@@ -9,10 +9,11 @@
 %token <sval> variables, operator
 
 %type <dval> exp
+%type <dval> calc
 %type <dval> NUM
 
 %left '-' '+'
-//%left variables
+%left variables
 %left '*' '/'
 %left NEG          /* negation--unary minus */
 %right '^'       /* exponentiation        */
@@ -31,7 +32,8 @@ line:    NL      { }
 program: parser program | parser
 parser:  NL 
   | statement 
-  | exp NL /*{System.out.println($1);}*/
+  | exp NL 
+  | error NL /*{System.out.println($1);}*/
   
   /**
   * for statement allows following forms: 
@@ -53,8 +55,18 @@ statement: FOR '(' forExp ';' cond ';' forExp ')' scope
 //numer: NUM {System.out.println($1);}
 forExp: /**/
     | exp
-exp: variables assign NUM 
-    | variables assign variables {System.out.println($1 + ":=" + $3);}
+exp: /*variables assign calc 
+    | */variables assign variables 
+    | variables assign calc {System.out.println("calc: " + $1 + ":=" + $3);}
+calc:  NUM { System.out.println("NUM: " + $1); $$ = $1; }
+       | calc '+' calc        { $$ = $1 + $3; }
+       | calc '-' calc        { $$ = $1 - $3; }
+       | calc '*' calc        { $$ = $1 * $3; }
+       | calc '/' calc        { $$ = $1 / $3; }
+       | '-' calc  %prec NEG { $$ = -$2; }
+       | calc '^' calc        { $$ = Math.pow($1, $3); }
+       | calc "==" calc     { $$ = $1 == $3 ? 1L : 0L; }
+       | '(' calc ')'        { $$ = $2; }
 cond:  /*empty*/
     | variables assertion NUM {System.out.println($1 + "==" + $3);}
 scope: '{' block '}'
@@ -85,7 +97,7 @@ block: parser block
 
   public void yyerror (String error) {
   	//ignore underflow exception 
-    System.err.println ("Error: " + error);
+    System.err.println ("Error :" + error);
   }
 
 

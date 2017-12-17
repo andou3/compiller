@@ -34,7 +34,7 @@ exp:   NUM { $$ = $1; }
        | '-' exp  %prec NEG { $$ = -$2; }
        | exp '^' exp        { $$ = Math.pow($1, $3); }
        | exp "==" exp 		{ $$ = $1 == $3 ? 1L : 0L; }
-       | '(' exp ')'        { $$ = $2; }
+       | '(' exp ')'        { $$ = $2; }1
        ;
 
 assignExp: /*variables '=' exp { $$ = $1; }
@@ -60,7 +60,7 @@ assignExp: /*variables '=' exp { $$ = $1; }
 
   public void yyerror (String error) {
   	//ignore underflow exception 
-    System.err.println ("Error: " + error);
+    //System.err.println ("Error: " + error);
   }
 
 
