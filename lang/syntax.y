@@ -3,77 +3,141 @@
   import java.io.*;
 %}
       
-%token NL          /* newline  */
-%token FOR, delimeter, assign '=', assertion, increment, BODY
-%token <dval> NUM
-%token <sval> variables, operator
+%token ID CONSTANT STRING_LITERAL CHARACTER TRUE FALSE
+%token CHAR INT BOOLEAN 
+%token FUNCDEFBLOCK VARBLOCK CODEBLOCK INPUT PRINT
 
-%type <dval> exp
-%type <dval> calc
-%type <dval> NUM
+%token IF WHILE RETURN
 
+%left AND_OP OR_OP
+%left LE_OP GE_OP EQ_OP NE_OP '<' '>'
 %left '-' '+'
-%left variables
 %left '*' '/'
-%left NEG          /* negation--unary minus */
-%right '^'       /* exponentiation        */
-%start program
+
+%nonassoc IFX
+%nonassoc ELSE
+
+%start Program
 
 %%
-/*
-line:    NL      { }
-       | exp NL  { System.out.println(" = " + $1); }
-       |  assignExp NL { System.out.println("var = " + $1); }
-       ;*/
-//To use any letter like ')' or other you MUST return it from lexical analizer
-//This syntax analizer read file per lines
-//To debug this throw calculate context free grammars
 
-program: parser program | parser
-parser:  NL 
-  | statement 
-  | exp NL 
-  | error NL /*{System.out.println($1);}*/
-  
-  /**
-  * for statement allows following forms: 
-  *for (;;) { 
-  *}
-  *for (VARIABLE := 1A3BCD; ; VARIABLE := 155dd) {} 
-  *for (; ; VARIABLE := 155dd) {} 
-  *for (; i == 0;) {} 
-  *for (VARIABLE := 1A3BCD; VARIABLE == 0; VARIABLE := 155dd) { 
-      i := 1 
-  *}
-  */
-statement: FOR '(' forExp ';' cond ';' forExp ')' scope
-  {System.out.println("FOR statement");}
-//numer: NUM {System.out.println($1);}
-forExp: /**/
-    | exp
-exp: /*variables assign calc 
-    | */variables assign variables 
-    | variables assign calc {System.out.println("calc: " + $1 + ":=" + $3);}
-calc:  NUM { System.out.println("NUM: " + $1); $$ = $1; }
-       | variables
-       | calc '+' calc        { $$ = $1 + $3; }
-       | calc '-' calc        { $$ = $1 - $3; }
-       | calc '*' calc        { $$ = $1 * $3; }
-       | calc '/' calc        { $$ = $1 / $3; }
-       | '-' calc  %prec NEG { $$ = -$2; }
-       | calc '^' calc        { $$ = Math.pow($1, $3); }
-       | calc "==" calc     { $$ = $1 == $3 ? 1L : 0L; }
-       | '(' calc ')'        { $$ = $2; }
-cond:  /*empty*/
-    | variables assertion NUM {System.out.println($1 + "==" + $3);}
-scope: '{' block '}'
-    | '{' NL block '}' 
-    | '{' '}'
-     {System.out.println("BLOCK");}
-block: parser block
-    | parser
-//exp2: variables increment {System.out.println($1 + "++");}
+Program
+  : FUNCDEFBLOCK':' func_def_list VARBLOCK':' declaration_list CODEBLOCK':' statement_list    // полная программа
+  { System.out.printf("\nProgram "); }
+  | VARBLOCK':' declaration_list CODEBLOCK':' statement_list                     // если нет пользовательских функций
+  { System.out.printf("\nProgram "); }
+  | FUNCDEFBLOCK':' func_def_list CODEBLOCK':' statement_list                   // если нет объявлений переменных
+  { System.out.printf("\nProgram "); }
+  | CODEBLOCK':' statement_list                                 // если нет ничего кроме кода
+  { System.out.printf("\nProgram "); }
+  ;
 
+func_def_list         // "Накручиваем" объявления функций до нужного количеста
+  : func_def  { System.out.printf("\nfunc_def_list "); } 
+  | func_def_list func_def { System.out.printf("\nfunc_def_list "); }
+  ;
+func_def
+  : type_specifier func_declorator compound_statement  // тип -- деклоратор   --  блок кода 
+  { System.out.printf("\nfunc_def "); }               // int     foo()       { code goes here }
+  ;
+
+type_specifier                       // спецификатор типа - ничего необычного
+  : INT
+  { System.out.printf("\nint_specificator "); }
+  | CHAR
+  { System.out.printf("\nchar_specificator "); }
+  | BOOLEAN
+  { System.out.printf("\nboolean_specificator "); }
+  ;
+
+func_declorator
+  : ID'('')'                       // пустой лист входных параметров
+  { System.out.printf ("\nfunc_declorator "); }
+  | ID'('parametr_declaration_list')'            // очевидно, не пустой, но это не точно
+  { System.out.printf ("\nfunc_declorator "); }
+  ;
+parametr_declaration_list
+  : type_specifier ID {System.out.printf("\nparam_declaration_list");}
+  | parametr_declaration_list',' type_specifier ID {System.out.printf("\nparam_declaration_list");}
+  ;
+
+compound_statement                     // ((какая-то функциональщина на LISp) (код в скобочках (в других ( в таких '{' '}' ))))
+  :'{''}'                        // лучший код - тот, которого нет
+  { System.out.printf("\nempty compound_statement "); }
+  |'{'statement_list'}'                // тут код уже есть... наверное
+  { System.out.printf("\ncompound_statement "); }
+  ;
+
+statement_list                       // крутим - вертим - "нецензурное рифмованое слово"
+  : statement  {System.out.printf("\nstatement_list");}       // statement ы - сколько раз, сколько нужно
+  | statement_list statement {System.out.printf("\nstatement_list");}
+  ;
+
+statement
+  : compound_statement                                 // куда ж мы без рекурсии // не знаю зачем она здесь, но пусть будет // если что-то сломается выпилить первым делом
+  |';'                         // для любителей потыкать на ';' больше одного раза - пустое выражение
+  { System.out.printf("\nempty statement "); }
+  | expression';'                        // собственно сами выражения - не пустые
+  { System.out.printf("\nexpression "); }
+  | IF'('expression')'compound_statement %prec IFX     // if
+  { System.out.printf("\nif <if>"); }
+  | IF'('expression')'compound_statement ELSE compound_statement    
+  { System.out.printf("\nif else"); }
+  | WHILE'('expression')'compound_statement     // while
+  { System.out.printf("\nwhile "); }
+  | RETURN';'                      // return 
+  { System.out.printf("\nreturn "); }
+  | RETURN expression';'
+  { System.out.printf("\nreturn "); }
+  | INPUT'('expression')'';'               //input()
+  { System.out.printf("\ninput() "); }
+  | PRINT'('expression')'';'               //print()
+  { System.out.printf("\nprint() "); }
+  | ID'('expression')'';'                //пользовательская функция
+  { System.out.printf("\nUser_func() "); }
+  | ID '=' expression';'                 //присваивание
+  { System.out.printf("\nassignment"); }
+  //| error';'
+  ;
+
+expression                  /* Лень расписывать */
+  : ID 
+  | CONSTANT 
+  | STRING_LITERAL 
+  | CHARACTER 
+  | TRUE                    // ну правда... 
+  | FALSE
+  | expression'+'expression         // и так ведь понятно
+  | expression'-'expression
+  | expression'*'expression
+  | expression'/'expression
+  | expression'<'expression
+  | expression'>'expression
+  | expression GE_OP expression
+  | expression LE_OP expression
+  | expression EQ_OP expression
+  | expression NE_OP expression
+  | expression AND_OP expression
+  | expression OR_OP expression
+  | '('expression')'
+  | error';'
+  ;
+
+declaration_list
+  : declaration { System.out.printf("\ndeclaration_list");}
+  | declaration_list declaration { System.out.printf("\ndeclaration_list");}
+  ;
+
+declaration
+  : INT ID'='CONSTANT';'  { System.out.printf("\nint init declaration"); }
+  | CHAR ID'='CHARACTER';' { System.out.printf("\nchar init declaration"); }
+  | BOOLEAN ID'='TRUE';'  { System.out.printf("\nbool init declaration"); }
+  | BOOLEAN ID'='FALSE';' { System.out.printf("\nbool init declaration"); }
+  | INT ID';' { System.out.printf("\nno init declaration"); }
+  | CHAR ID';' { System.out.printf("\nno init declaration"); }
+  | BOOLEAN ID';' { System.out.printf("\nno init declaration"); }
+  | error';' { System.out.printf("\nERROR");}
+  ;
 %%
 
   private Yylex lexer;
@@ -92,9 +156,9 @@ block: parser block
   }
 
 
-  public void yyerror (String error) {
+  public static void yyerror (String error) {
   	//ignore underflow exception 
-    System.err.println ("Error :" + error);
+    System.out.println ("Error :" + error);
   }
 
 

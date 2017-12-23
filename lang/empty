@@ -1,0 +1,10 @@
+functions: 
+int foo(int a, int a) {
+    i = 4;
+}
+variables:
+char a = 'a';
+boolean a = true;
+boolean a;
+int i;
+code: ;

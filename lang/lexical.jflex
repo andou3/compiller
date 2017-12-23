@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 %%
-
+//%option noyywrap yylineno
 %byaccj
 
 %{
@@ -22,14 +22,14 @@ import java.util.Scanner;
 /*%class Lab2
 %standalone*/
 %column
-variables = [a-zA-Z]([0-9]|[a-zA-Z])*
+/*variables = [a-zA-Z]([0-9]|[a-zA-Z])*
 NUM = [0-9]([0-9]|[a-fA-F])*
-operator = ([<>=+-]|[*/])
+operator = ([<>=+-]|[/]) //Добавить '*' когда при раскомменчивании
 Whitespace = [ \t\n]
 delimeter = [();]
 bodyBrackets = [{}]
 NL  = \n | \r | \r\n
-
+*/
 %{
 	
 enum Lexer {
@@ -57,6 +57,30 @@ enum Lexer {
 	}
 }
 
+/*
+void skip_multiline_comment() {
+  int c;
+  while(1)
+  {
+    switch(input()) // input - внутренняя функция flex, по сути getch();
+    {
+      case EOF:
+        yyerror("Error: unclosed comment\n");
+        System.exit(-1);
+        goto done;
+      break;
+
+      case '*':
+        if((c = input()) == '/') goto done;
+        unput(c); // putch();
+        break;
+      default:
+        break;
+    }
+  }
+  done: ;
+}
+*/
 	public static void print(Lexer lexer, String text, int atColumn) {
 		System.out.printf("%s at column %d: %s\n", lexer.getType(), atColumn, text);	
 	}
@@ -127,7 +151,7 @@ enum Lexer {
 
 %}
 
-%eof{
+/*%eof{
 	System.out.println("Identifiers table:");
 	table.forEach(System.out::println);
 	System.out.println("\n try to find some variable:");
@@ -140,75 +164,60 @@ enum Lexer {
 	}
 	scanner.close();
 %eof}
-
+*/
 %%
+"//".*			{ /* Single line comment: Everything that starts with "//" will be skipped. */ }
+"/*"         { /*skip_multiline_comment();*/}
 
-//rule
+"int"			{  return Parser.INT; }
+"char"			{  return Parser.CHAR; }
+"boolean"       {  return Parser.BOOLEAN;}
+"if"			{  return Parser.IF; }
+"else"			{  return Parser.ELSE; }
+"while"			{  return Parser.WHILE; }
+"return"		{  return Parser.RETURN; }
 
-for {
-	print(Lexer.KEYWORD, yytext(), yycolumn);
-	return Parser.FOR;
-}
-do {
-	print(Lexer.KEYWORD, yytext(), yycolumn);
-}
-{variables} {
-	print(Lexer.VARIABLE, yytext(), yycolumn);
-	new Variable(yytext(), true);
-	yyparser.yylval.sval = yytext();
-	return Parser.variables;
-}
-{operator}    { 
-		//yyparser.yyval.sval = new ParserVal(yytext()) ;
-		return (int) yycharat(0);
-}
+"functions" { return Parser.FUNCDEFBLOCK;}
+"variables" { return Parser.VARBLOCK;}
+"code"      { return Parser.CODEBLOCK;}
+"input"     { return Parser.INPUT; }
+"print"      { return Parser.PRINT; }
+"true"      { return Parser.TRUE; }
+"false"     { return Parser.FALSE; }
 
-"=" {
-		print(Lexer.OPERATION, yytext(), yycolumn);
-		return Parser.assign;
-	}
+[a-zA-Z_]([a-zA-Z_]|[0-9])*		{ return Parser.ID; }
 
-{bodyBrackets} {
-	print(Lexer.DELIMETER, yytext(), yycolumn);
-	return (int) yycharat(0);
-}
+0               { return Parser.CONSTANT; }
+[1-9][0-9]*     { return Parser.CONSTANT; }
+"'"[a-zA-Z]"'"  { return Parser.CHARACTER; }
 
-== {
-	return Parser.assertion;
-}
+//\"(\\.|[^\\"])*\"	{ return Parser.STRING_LITERAL; }
 
-"++" {
-	return Parser.increment;
-}
+";"			{  return ';'; }
+":"     {  return ':'; }
+","     { return ','; }
 
-/* newline */
-{NL}   { return Parser.NL; }
+"&&"		{  return Parser.AND_OP; }
+"||"		{  return Parser.OR_OP; }
+"<="		{  return Parser.LE_OP; }
+">="		{  return Parser.GE_OP; }
+"=="		{  return Parser.EQ_OP; }
+"!="		{  return Parser.NE_OP; }
 
-/* double */
-{NUM}  { yyparser.yyval = new ParserVal((double) Integer.parseInt(yytext(), 16));
-		System.out.println("NUM: " + yyparser.yyval.dval);
-         return Parser.NUM; }
+("{")		{  return '{'; }
+("}")		{  return '}'; }
+"("			{  return '('; }
+")"			{  return ')'; }
+("[")		{  return '['; }
+("]")		{  return ']'; }
 
-/*{NUM} {
-	if (Pattern.compile("[g-zG-Z]").matcher(yytext()).find()) {
-		print(Lexer.UNKNOWN, yytext(), yycolumn);
-	} else {	
-		print(Lexer.NUMBER, yytext(), yycolumn);
-	}
-}*/
-{delimeter} {
-	print(Lexer.DELIMETER, yytext(), yycolumn);
-	return (int) yycharat(0);
-}
-/*{operator} {
-	print(Lexer.OPERATION, yytext(), yycolumn);
-}*/
+"="			{  return '='; }
+"-"			{  return '-'; }
+"+"			{  return '+'; }
+"*"			{  return '*'; }
+"/"			{  return '/'; }
+"<"			{  return '<'; }
+">"			{  return '>'; }
 
-//順番が大事
-{Whitespace} {}
-//bellow's shit make possible don't print every line of base file
-. { 
-	print(Lexer.UNKNOWN, yytext(), yycolumn);
-}
-
-
+[ \t\n\r]	;
+.			{ Parser.yyerror("Unknown character"); }
