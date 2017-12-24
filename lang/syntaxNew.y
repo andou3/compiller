@@ -3,25 +3,24 @@
   import java.io.*;
 %}
       
-%token ID CONSTANT STRING_LITERAL CHARACTER TRUE FALSE
-%token CHAR INT BOOLEAN 
-%token FUNCDEFBLOCK VARBLOCK CODEBLOCK INPUT PRINT
+%token NL          /* newline  */
+%token  INT, CHAR, BOOLEAN, IF, ELSE, WHILE, RETURN, FUNCDEFBLOCK, VARBLOCK, 
+CODEBLOCK, INPUT, PRINT, TRUE, FALSE, AND_OP, OR_OP, LE_OP, GE_OP, EQ_OP, NE_OP
+%token <ival> CONSTANT, CHARACTER
+%token <sval> VARIABLE, OPERATOR, LITERAL
 
-%token IF WHILE RETURN
+//%type <dval> exp
 
-%left AND_OP OR_OP
-%left LE_OP GE_OP EQ_OP NE_OP '<' '>'
 %left '-' '+'
+%left variables
 %left '*' '/'
-
-%nonassoc IFX
-%nonassoc ELSE
-
-%start Program
+//%left NEG          /* negation--unary minus */
+//%right '^'       /* exponentiation        */
+%start program
 
 %%
 
-Program
+  program
   : FUNCDEFBLOCK':' func_def_list VARBLOCK':' declaration_list CODEBLOCK':' statement_list    // полная программа
   { System.out.printf("\nProgram "); }
   | VARBLOCK':' declaration_list //CODEBLOCK':' statement_list                     // если нет пользовательских функций
@@ -51,14 +50,14 @@ type_specifier                       // спецификатор типа - ни
   ;
 
 func_declorator
-  : ID'('')'                       // пустой лист входных параметров
+  : VARIABLE '('')'                       // пустой лист входных параметров
   { System.out.printf ("\nfunc_declorator "); }
-  | ID'('parametr_declaration_list')'            // очевидно, не пустой, но это не точно
+  | VARIABLE '('parametr_declaration_list')'            // очевидно, не пустой, но это не точно
   { System.out.printf ("\nfunc_declorator "); }
   ;
 parametr_declaration_list
-  : type_specifier ID {System.out.printf("\nparam_declaration_list");}
-  | parametr_declaration_list',' type_specifier ID {System.out.printf("\nparam_declaration_list");}
+  : type_specifier VARIABLE {System.out.printf("\nparam_declaration_list");}
+  | parametr_declaration_list',' type_specifier VARIABLE {System.out.printf("\nparam_declaration_list");}
   ;
 
 compound_statement                     // ((какая-то функциональщина на LISp) (код в скобочках (в других ( в таких '{' '}' ))))
@@ -93,17 +92,17 @@ statement
   { System.out.printf("\ninput() "); }
   | PRINT'('expression')'';'               //print()
   { System.out.printf("\nprint() "); }
-  | ID'('expression')'';'                //пользовательская функция
+  | VARIABLE'('expression')'';'                //пользовательская функция
   { System.out.printf("\nUser_func() "); }
-  | ID '=' expression';'                 //присваивание
+  | VARIABLE '=' expression';'                 //присваивание
   { System.out.printf("\nassignment"); }
   //| error';'
   ;
 
 expression                  // Лень расписывать
-  : ID 
+  : VARIABLE 
   | CONSTANT 
-  | STRING_LITERAL 
+  | LITERAL 
   | CHARACTER 
   | TRUE                    // ну правда... 
   | FALSE
@@ -129,15 +128,16 @@ declaration_list
   ;
 
 declaration
-  : INT ID'='CONSTANT';'  { System.out.println("\nint init declaration"); }
-  | CHAR ID'='CHARACTER';' { System.out.printf("\nchar init declaration"); }
-  | BOOLEAN ID'='TRUE';'  { System.out.printf("\nbool init declaration"); }
-  | BOOLEAN ID'='FALSE';' { System.out.printf("\nbool init declaration"); }
-  | INT ID';' { System.out.printf("\nno init declaration"); }
-  | CHAR ID';' { System.out.printf("\nno init declaration"); }
-  | BOOLEAN ID';' { System.out.printf("\nno init declaration"); }
+  : INT VARIABLE'='CONSTANT';'  { System.out.println("int " + $2 + " = " + $4); }
+  | CHAR VARIABLE'='CHARACTER';' { System.out.printf("\nchar init declaration"); }
+  | BOOLEAN VARIABLE'='TRUE';'  { System.out.printf("\nbool init declaration"); }
+  | BOOLEAN VARIABLE'='FALSE';' { System.out.printf("\nbool init declaration"); }
+  | INT VARIABLE';' { System.out.printf("\nno init declaration"); }
+  | CHAR VARIABLE';' { System.out.printf("\nno init declaration"); }
+  | BOOLEAN VARIABLE';' { System.out.printf("\nno init declaration"); }
   | error';' { System.out.printf("\nERROR");}
   ;
+
 %%
 
   private Yylex lexer;
@@ -152,14 +152,13 @@ declaration
     catch (IOException e) {
       System.err.println("IO error :"+e);
     }
-    System.out.println(yyl_return);
     return yyl_return;
   }
 
 
   public void yyerror (String error) {
   	//ignore underflow exception 
-    System.out.println ("Error)) :" + error);
+    System.err.println ("Error :" + error);
   }
 
 

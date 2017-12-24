@@ -3,7 +3,8 @@
 JFLEX  = jflex 
 BYACCJ = byaccj -J
 JAVAC  = javac
-
+LEX_FILE = lex.jflex
+BYACC_FILE = syntaxNew.y
 # targets:
 
 all: Parser.class
@@ -19,8 +20,8 @@ clean:
 Parser.class: Yylex.java Parser.java
 	$(JAVAC) Parser.java
 
-Yylex.java: lexical.jflex
-	$(JFLEX) lexical.jflex
+Yylex.java: $(LEX_FILE)
+	$(JFLEX) $(LEX_FILE)
 
-Parser.java: syntax.y
-	$(BYACCJ) syntax.y
+Parser.java: $(BYACC_FILE)
+	$(BYACCJ) $(BYACC_FILE)

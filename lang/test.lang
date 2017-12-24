@@ -6,5 +6,5 @@ variables:
 char a = 'a';
 boolean a = true;
 boolean a;
-int i;
+int i = 12;
 code: ;

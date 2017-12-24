@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 %%
-//%option noyywrap yylineno
+
 %byaccj
 
 %{
@@ -19,17 +19,18 @@ import java.util.Scanner;
   }
 %}
 
-/*%class Lab2
-%standalone*/
+//%class Lab2
+%standalone
 %column
-/*variables = [a-zA-Z]([0-9]|[a-zA-Z])*
-NUM = [0-9]([0-9]|[a-fA-F])*
-operator = ([<>=+-]|[/]) //Добавить '*' когда при раскомменчивании
-Whitespace = [ \t\n]
-delimeter = [();]
-bodyBrackets = [{}]
+constant = 0|[1-9][0-9]*
+character = "'"[a-zA-Z]"'"
+literal = \".\"//\"(\\.|[^\\"])*\"
+variables = [a-zA-Z_]([a-zA-Z_]|[0-9])*	
+operator = ([<>=+-]|[/\\*]) 
+delimeter = [;:,]
+brackets = [()\[\]{}]
 NL  = \n | \r | \r\n
-*/
+
 %{
 	
 enum Lexer {
@@ -57,30 +58,7 @@ enum Lexer {
 	}
 }
 
-/*
-void skip_multiline_comment() {
-  int c;
-  while(1)
-  {
-    switch(input()) // input - внутренняя функция flex, по сути getch();
-    {
-      case EOF:
-        yyerror("Error: unclosed comment\n");
-        System.exit(-1);
-        goto done;
-      break;
 
-      case '*':
-        if((c = input()) == '/') goto done;
-        unput(c); // putch();
-        break;
-      default:
-        break;
-    }
-  }
-  done: ;
-}
-*/
 	public static void print(Lexer lexer, String text, int atColumn) {
 		System.out.printf("%s at column %d: %s\n", lexer.getType(), atColumn, text);	
 	}
@@ -166,58 +144,93 @@ void skip_multiline_comment() {
 %eof}
 */
 %%
-"//".*			{ /* Single line comment: Everything that starts with "//" will be skipped. */ }
-"/*"         { /*skip_multiline_comment();*/}
 
-"int"			{  return Parser.INT; }
-"char"			{  return Parser.CHAR; }
-"boolean"       {  return Parser.BOOLEAN;}
-"if"			{  return Parser.IF; }
-"else"			{  return Parser.ELSE; }
-"while"			{  return Parser.WHILE; }
-"return"		{  return Parser.RETURN; }
+"int"			{  
+	return Parser.INT; 
+}
+"char"			{  
+	return Parser.CHAR; 
+}
+"boolean"       {  
+	return Parser.BOOLEAN;
+}
+"if"			{
+  return Parser.IF; 
+  }
+"else"			{  
+	return Parser.ELSE; 
+}
+"while"			{  
+	return Parser.WHILE;
+ }
+"return"		{  
+	return Parser.RETURN; 
+}
 
-"functions" { return Parser.FUNCDEFBLOCK;}
-"variables" { return Parser.VARBLOCK;}
-"code"      { return Parser.CODEBLOCK;}
-"input"     { return Parser.INPUT; }
-"print"      { return Parser.PRINT; }
-"true"      { return Parser.TRUE; }
-"false"     { return Parser.FALSE; }
+"functions" { 
+	return Parser.FUNCDEFBLOCK;
+}
+"variables" { 
+	return Parser.VARBLOCK;
+}
+"code"      { 
+	return Parser.CODEBLOCK;
+}
+"input"     { 
+	return Parser.INPUT; 
+}
+"print"      { 
+	return Parser.PRINT; 
+}
+"true"      { 
+	return Parser.TRUE; 
+}
+"false"     { 
+	return Parser.FALSE;
+ }
 
-[a-zA-Z_]([a-zA-Z_]|[0-9])*		{ return Parser.ID; }
+"&&"		{  
+	return Parser.AND_OP; 
+}
+"||"		{  
+	return Parser.OR_OP; 
+}
+"<="		{  
+	return Parser.LE_OP; 
+}
+">="		{  
+	return Parser.GE_OP;
+ }
+"=="		{  
+	return Parser.EQ_OP; 
+}
+"!="		{  
+	return Parser.NE_OP;
+}
 
-0               { return Parser.CONSTANT; }
-[1-9][0-9]*     { return Parser.CONSTANT; }
-"'"[a-zA-Z]"'"  { return Parser.CHARACTER; }
+{variables} {
+	print(Lexer.VARIABLE, yytext(), yycolumn);
+	new Variable(yytext(), true);
+	yyparser.yylval.sval = yytext();
+	return Parser.VARIABLE;
+}
+{literal} {
+	print(Lexer.VARIABLE, yytext(), yycolumn);
+	new Variable(yytext(), true);
+	yyparser.yylval.sval = yytext();
+	return Parser.LITERAL;
+}
+{character} {
+	yyparser.yylval.ival = (int) yycharat(0);
+	return Parser.CHARACTER;
+}
+{constant} {
+	yyparser.yylval.ival = Integer.parseInt(yytext());
+    return Parser.CONSTANT; 
+}
 
-//\"(\\.|[^\\"])*\"	{ return Parser.STRING_LITERAL; }
-
-";"			{  return ';'; }
-":"     {  return ':'; }
-","     { return ','; }
-
-"&&"		{  return Parser.AND_OP; }
-"||"		{  return Parser.OR_OP; }
-"<="		{  return Parser.LE_OP; }
-">="		{  return Parser.GE_OP; }
-"=="		{  return Parser.EQ_OP; }
-"!="		{  return Parser.NE_OP; }
-
-("{")		{  return '{'; }
-("}")		{  return '}'; }
-"("			{  return '('; }
-")"			{  return ')'; }
-("[")		{  return '['; }
-("]")		{  return ']'; }
-
-"="			{  return '='; }
-"-"			{  return '-'; }
-"+"			{  return '+'; }
-"*"			{  return '*'; }
-"/"			{  return '/'; }
-"<"			{  return '<'; }
-">"			{  return '>'; }
-
+{brackets} {return (int) yycharat(0); }
+{delimeter} { return (int) yycharat(0); }
+{operator}	{ return (int) yycharat(0); }
 [ \t\n\r]	;
 .			{ System.out.println("Unknown character"); }
