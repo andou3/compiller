@@ -1,6 +1,10 @@
 functions: 
 int foo(int a, int a) {
-    i = 4;
+	if (i < 5) {   
+	 	while (i < 5) {
+			i = i + 1;
+		}
+	}
 }
 variables:
 char a = 'a';
