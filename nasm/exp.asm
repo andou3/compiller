@@ -9,7 +9,7 @@ SECTION .text
 main:
     push ebp
     mov ebp, esp
-    sub esp, 10
+    sub esp, 0xFFFFF
 
     mov eax, 8
     mov ecx, 2
