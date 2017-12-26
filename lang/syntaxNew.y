@@ -9,21 +9,9 @@ CODEBLOCK, INPUT, PRINT, TRUE, FALSE, AND_OP, OR_OP, LE_OP, GE_OP, EQ_OP, NE_OP
 %token <ival> CONSTANT, CHARACTER
 %token <sval> VARIABLE, OPERATOR, LITERAL
 
+
+
 %type <obj> expression
-
-/*%union expr {
-  boolean isComposite;
-  int shift;
-  int value;
-}*/
-
-%{
-  class Expression {
-    boolean isComposite;
-  int shift;
-  int value;
-  }
-%}
 
 %left '-' '+'
 %left variables
@@ -114,16 +102,44 @@ statement
   ;
 
 expression                  // Лень расписывать
-  : VARIABLE 
-  | CONSTANT 
+  : VARIABLE //not implemented yet (Реализовать сначала список идентификаторов )
+  | CONSTANT { $$ = new Expression(Types.CONSTANT, memoryManager.getAvailableShift(java.lang.Integer.BYTES), $1);}
   | LITERAL 
   | CHARACTER 
-  | TRUE                    // ну правда... 
+  | TRUE 
   | FALSE
-  | expression'+'expression  {$$ = new Expression(); }       // и так ведь понятно
-  | expression'-'expression
-  | expression'*'expression
-  | expression'/'expression
+  | expression'+'expression  {
+    $$ = new Expression(
+        Types.COMPOSITE,
+        memoryManager.getAvailableShift(java.lang.Integer.BYTES),
+        $1,
+        $3,
+        Operations.ADD); 
+    }       // и так ведь понятно
+  | expression'-'expression {
+  $$ = new Expression(
+        Types.COMPOSITE,
+        memoryManager.getAvailableShift(java.lang.Integer.BYTES),
+        $1,
+        $3,
+        Operations.SUB); 
+    }
+  | expression'*'expression {
+    $$ = new Expression(
+        Types.COMPOSITE,
+        memoryManager.getAvailableShift(java.lang.Integer.BYTES),
+        $1,
+        $3,
+        Operations.MUL); 
+    }
+  | expression'/'expression {
+    $$ = new Expression(
+        Types.COMPOSITE,
+        memoryManager.getAvailableShift(java.lang.Integer.BYTES),
+        $1,
+        $3,
+        Operations.DIV); 
+    }
   | expression'<'expression
   | expression'>'expression
   | expression GE_OP expression
@@ -155,7 +171,7 @@ declaration
 %%
 
   private Yylex lexer;
-
+  private MemoryManager memoryManager = new MemoryManager();
 
   private int yylex () {
     int yyl_return = -1;
