@@ -62,29 +62,27 @@ parametr_declaration_list
   | parametr_declaration_list',' type_specifier VARIABLE {System.out.printf("\nparam_declaration_list");}
   ;
 
-compound_statement                     // ((какая-то функциональщина на LISp) (код в скобочках (в других ( в таких '{' '}' ))))
+compound_statement                  
   :'{''}'                        // лучший код - тот, которого нет
   { System.out.printf("\nempty compound_statement "); }
   |'{'statement_list'}'                // тут код уже есть... наверное
   { System.out.printf("\ncompound_statement "); }
   ;
 
-statement_list                       // крутим - вертим - "нецензурное рифмованое слово"
-  : statement  {System.out.printf("\nstatement_list");}       // statement ы - сколько раз, сколько нужно
+statement_list                  
+  : statement  {System.out.printf("\nstatement_list");}       
   | statement_list statement {System.out.printf("\nstatement_list");}
   ;
 
 statement
-  : compound_statement                                 // куда ж мы без рекурсии // не знаю зачем она здесь, но пусть будет // если что-то сломается выпилить первым делом
-  |';'                         // для любителей потыкать на ';' больше одного раза - пустое выражение
-  { System.out.printf("\nempty statement "); }
-  | expression';'                        // собственно сами выражения - не пустые
+  :/* expression';'                   
   { System.out.printf("\nexpression "); }
-  | IF'('expression')'compound_statement %prec IFX     // if
+  | */
+  IF'('conditions')'compound_statement %prec IFX     // if
   { System.out.printf("\nif <if>"); }
-  | IF'('expression')'compound_statement ELSE compound_statement    
+  | IF'('conditions')'compound_statement ELSE compound_statement    
   { System.out.printf("\nif else"); }
-  | WHILE'('expression')'compound_statement     // while
+  | WHILE'('conditions')'compound_statement     // while
   { System.out.printf("\nwhile "); }
   | RETURN';'                      // return 
   { System.out.printf("\nreturn "); }
@@ -100,16 +98,27 @@ statement
   { System.out.printf("\nUser_func() "); }
   | VARIABLE '=' expression';'                 //присваивание
   { System.out.printf("\nassignment"); }
+  | VARIABLE '=' conditions ';'
   //| error';'
   ;
+
+conditions :
+  TRUE 
+  | FALSE
+  | expression'<'expression
+  | expression'>'expression
+  | expression GE_OP expression
+  | expression LE_OP expression
+  | expression EQ_OP expression
+  | expression NE_OP expression
+  | expression AND_OP expression
+  | expression OR_OP expression
 
 expression                  // Лень расписывать
   : VARIABLE //not implemented yet (Реализовать сначала список идентификаторов )
   | CONSTANT { $$ = new Expression(Types.CONSTANT, memoryManager.getAvailableShift(java.lang.Integer.BYTES), $1, memoryManager);}
   | LITERAL 
   | CHARACTER 
-  | TRUE 
-  | FALSE
   | expression'+'expression  {
     $$ = new Expression(
         Types.COMPOSITE,
@@ -146,14 +155,6 @@ expression                  // Лень расписывать
         Operations.DIV,
         memoryManager); 
     }
-  | expression'<'expression
-  | expression'>'expression
-  | expression GE_OP expression
-  | expression LE_OP expression
-  | expression EQ_OP expression
-  | expression NE_OP expression
-  | expression AND_OP expression
-  | expression OR_OP expression
   | '('expression')'
   //| error';'
   ;

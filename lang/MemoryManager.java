@@ -3,7 +3,7 @@ class MemoryManager {
 	
 	final static int MAX_SHIFT = 0xFFFFF;
 
-	private static String startProgram = "\nnglobal main" +
+	private static String startProgram = "\nglobal main" +
     "extern scanf\n" +
     "extern printf\n" +
 
