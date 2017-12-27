@@ -91,9 +91,11 @@ statement
   | RETURN expression';'
   { System.out.printf("\nreturn "); }
   | INPUT'('expression')'';'               //input()
-  { System.out.printf("\ninput() "); }
+  { System.out.printf("\ninput() ");
+    memoryManager.printProgram(); }
   | PRINT'('expression')'';'               //print()
-  { System.out.printf("\nprint() "); }
+  { System.out.printf("\nprint() "); 
+  memoryManager.printProgram(); }
   | VARIABLE'('expression')'';'                //пользовательская функция
   { System.out.printf("\nUser_func() "); }
   | VARIABLE '=' expression';'                 //присваивание
@@ -103,7 +105,7 @@ statement
 
 expression                  // Лень расписывать
   : VARIABLE //not implemented yet (Реализовать сначала список идентификаторов )
-  | CONSTANT { $$ = new Expression(Types.CONSTANT, memoryManager.getAvailableShift(java.lang.Integer.BYTES), $1);}
+  | CONSTANT { $$ = new Expression(Types.CONSTANT, memoryManager.getAvailableShift(java.lang.Integer.BYTES), $1, memoryManager);}
   | LITERAL 
   | CHARACTER 
   | TRUE 
@@ -114,7 +116,8 @@ expression                  // Лень расписывать
         memoryManager.getAvailableShift(java.lang.Integer.BYTES),
         $1,
         $3,
-        Operations.ADD); 
+        Operations.ADD,
+        memoryManager); 
     }       // и так ведь понятно
   | expression'-'expression {
   $$ = new Expression(
@@ -122,7 +125,8 @@ expression                  // Лень расписывать
         memoryManager.getAvailableShift(java.lang.Integer.BYTES),
         $1,
         $3,
-        Operations.SUB); 
+        Operations.SUB,
+        memoryManager); 
     }
   | expression'*'expression {
     $$ = new Expression(
@@ -130,7 +134,8 @@ expression                  // Лень расписывать
         memoryManager.getAvailableShift(java.lang.Integer.BYTES),
         $1,
         $3,
-        Operations.MUL); 
+        Operations.MUL,
+        memoryManager); 
     }
   | expression'/'expression {
     $$ = new Expression(
@@ -138,7 +143,8 @@ expression                  // Лень расписывать
         memoryManager.getAvailableShift(java.lang.Integer.BYTES),
         $1,
         $3,
-        Operations.DIV); 
+        Operations.DIV,
+        memoryManager); 
     }
   | expression'<'expression
   | expression'>'expression

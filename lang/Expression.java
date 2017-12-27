@@ -2,27 +2,30 @@ class Expression {
 
 	Types type;
 	int stackShift;
-	int value;//REMOVE!!!!
-
-	Operations operation;
+	private MemoryManager allocator;
+	private int value;
+	private Operations operation;
 
 	Expression e1, e2;
 
-	Expression(Types type, int stackShift, int value) {
+	Expression(Types type, int stackShift, int value, MemoryManager allocator) {
 		this.type = type;
 		this.stackShift = stackShift;
 		this.value = value; //СРОЧНО УДАЛИТЬ ПОСЛЕ ОТЛАДКИ!!!!!!
-		allocate();
+		this.allocator = allocator;
+		allocator.allocateStackLocalVariable(stackShift, value);
+
 		//System.out.println(value);
 	}
 
-	Expression(Types type, int stackShift, Object e1, Object e2, Operations operation) {
+	Expression(Types type, int stackShift, Object e1, Object e2, Operations operation, MemoryManager allocator) {
 		this.type = type;
 		this.stackShift = stackShift;
 		this.e1 = (Expression) e1;
 		this.e2 = (Expression) e2;
 		this.operation = operation;
-		
+		this.allocator = allocator;
+		allocator.calculateStackExpression(this.e1.stackShift, this.operation, this.e2.stackShift, this.stackShift);	
 	
 		/*switch (operation) {
 			case ADD: {
@@ -47,35 +50,12 @@ class Expression {
 			}
 		}
 		System.out.println("THIS.value = " + this.value);*/
-		allocate();
 	}
 
 	int getValue() {
 		return value;
 	}
 
-	private void allocate() {
-		
-		//Написать сюда код, который делает ассемблерные вставки в строку, а после, уже в файл 
-	}
-}
-
-enum Operations {
-
-	ADD("+"),
-	SUB("-"),
-	MUL("*"),
-	DIV("/");
-
-	private String value;
-
-	private Operations(String value) {
-		this.value = value;
-	}
-
-	String getValue() {
-		return value;
-	}
 }
 
 enum Types {

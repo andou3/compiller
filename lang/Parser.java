@@ -451,7 +451,7 @@ final static String yyrule[] = {
 "declaration : error ';'",
 };
 
-//#line 172 "syntaxNew.y"
+//#line 178 "syntaxNew.y"
 
   private Yylex lexer;
   private MemoryManager memoryManager = new MemoryManager();
@@ -747,109 +747,115 @@ case 26:
 break;
 case 27:
 //#line 94 "syntaxNew.y"
-{ System.out.printf("\ninput() "); }
+{ System.out.printf("\ninput() ");
+    memoryManager.printProgram(); }
 break;
 case 28:
-//#line 96 "syntaxNew.y"
-{ System.out.printf("\nprint() "); }
+//#line 97 "syntaxNew.y"
+{ System.out.printf("\nprint() "); 
+  memoryManager.printProgram(); }
 break;
 case 29:
-//#line 98 "syntaxNew.y"
+//#line 100 "syntaxNew.y"
 { System.out.printf("\nUser_func() "); }
 break;
 case 30:
-//#line 100 "syntaxNew.y"
+//#line 102 "syntaxNew.y"
 { System.out.printf("\nassignment"); }
 break;
 case 32:
-//#line 106 "syntaxNew.y"
-{ yyval.obj = new Expression(Types.CONSTANT, memoryManager.getAvailableShift(java.lang.Integer.BYTES), val_peek(0).ival);}
+//#line 108 "syntaxNew.y"
+{ yyval.obj = new Expression(Types.CONSTANT, memoryManager.getAvailableShift(java.lang.Integer.BYTES), val_peek(0).ival, memoryManager);}
 break;
 case 37:
-//#line 111 "syntaxNew.y"
+//#line 113 "syntaxNew.y"
 {
     yyval.obj = new Expression(
         Types.COMPOSITE,
         memoryManager.getAvailableShift(java.lang.Integer.BYTES),
         val_peek(2).obj,
         val_peek(0).obj,
-        Operations.ADD); 
+        Operations.ADD,
+        memoryManager); 
     }
 break;
 case 38:
-//#line 119 "syntaxNew.y"
+//#line 122 "syntaxNew.y"
 {
   yyval.obj = new Expression(
         Types.COMPOSITE,
         memoryManager.getAvailableShift(java.lang.Integer.BYTES),
         val_peek(2).obj,
         val_peek(0).obj,
-        Operations.SUB); 
+        Operations.SUB,
+        memoryManager); 
     }
 break;
 case 39:
-//#line 127 "syntaxNew.y"
+//#line 131 "syntaxNew.y"
 {
     yyval.obj = new Expression(
         Types.COMPOSITE,
         memoryManager.getAvailableShift(java.lang.Integer.BYTES),
         val_peek(2).obj,
         val_peek(0).obj,
-        Operations.MUL); 
+        Operations.MUL,
+        memoryManager); 
     }
 break;
 case 40:
-//#line 135 "syntaxNew.y"
+//#line 140 "syntaxNew.y"
 {
     yyval.obj = new Expression(
         Types.COMPOSITE,
         memoryManager.getAvailableShift(java.lang.Integer.BYTES),
         val_peek(2).obj,
         val_peek(0).obj,
-        Operations.DIV); 
+        Operations.DIV,
+        memoryManager); 
     }
 break;
 case 50:
-//#line 156 "syntaxNew.y"
+//#line 162 "syntaxNew.y"
 { System.out.printf("\ndeclaration_list");}
 break;
 case 51:
-//#line 157 "syntaxNew.y"
+//#line 163 "syntaxNew.y"
 { System.out.printf("\ndeclaration_list");}
 break;
 case 52:
-//#line 161 "syntaxNew.y"
+//#line 167 "syntaxNew.y"
 { System.out.println("int " + val_peek(3).sval + " = " + val_peek(1).ival); }
 break;
 case 53:
-//#line 162 "syntaxNew.y"
+//#line 168 "syntaxNew.y"
 { System.out.printf("\nchar init declaration"); }
 break;
 case 54:
-//#line 163 "syntaxNew.y"
+//#line 169 "syntaxNew.y"
 { System.out.printf("\nbool init declaration"); }
 break;
 case 55:
-//#line 164 "syntaxNew.y"
+//#line 170 "syntaxNew.y"
 { System.out.printf("\nbool init declaration"); }
 break;
 case 56:
-//#line 165 "syntaxNew.y"
+//#line 171 "syntaxNew.y"
 { System.out.printf("\nno init declaration"); }
 break;
 case 57:
-//#line 166 "syntaxNew.y"
+//#line 172 "syntaxNew.y"
 { System.out.printf("\nno init declaration"); }
 break;
 case 58:
-//#line 167 "syntaxNew.y"
+//#line 173 "syntaxNew.y"
 { System.out.printf("\nno init declaration"); }
 break;
 case 59:
-//#line 168 "syntaxNew.y"
+//#line 174 "syntaxNew.y"
 { System.out.printf("\nERROR");}
 break;
-//#line 776 "Parser.java"
+//#line 782 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####
